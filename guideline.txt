@@ -1,0 +1,53 @@
+- Create EC2 instance for Jenkins with t2.large and SSH keys
+- Create IAM Role with EC2 Administrator Access and assign the role to the Jenkins server
+- Run scripts on Jenkins server to install Jenkins and other dependencies
+- See Scripts folder - jenkins.sh 
+- Login Jenkins server on port 8080 (make sure the security group allows for inbound 8080 connections from your machine)
+- Install plugins on Jenkins server
+- Install Docker on Jenkins server with the following:
+    sudo apt-get update
+    sudo apt-get install docker.io -y
+    sudo usermod -aG docker $USER   #my case is ubuntu
+    newgrp docker
+    sudo chmod 777 /var/run/docker.sock
+
+- Spin up Docker container with sonarqube on port 9000
+    docker run -d --name sonar -p 9000:9000 sonarqube:lts-community
+
+- Validate you are able to login to Sonarqube with admin/admin 
+- Install Trivy, Kubectl and Terraform on Jenkins server
+- See Scripts folder - script.sh (make sure you run chmod 777 script.sh)
+
+- Install all the plugins on Jenkins Server:
+    Blue ocean, Terraform, Eclipse Temurin Installer, SonarQube Scanner, 
+    NodeJs Plugin, Docker, Docker commons, Docker pipeline, Docker API, Docker Build step, Owasp Dependency Check, Kubernetes
+    Kubernetes CLI, Kubernetes Client API, Kubernetes Pipeline DevOps steps
+
+- Configure Plugins through Tools for JDK and Node19
+- Create Sonarqube Token and add credentials to Jenkins Server global creds as Sonar-token
+- Since you are there in Credentials, you can also add the creds for Dockerhub as "docker" for id and description
+- Configure Jenkins System settings to include URL for Sonarqube (http://localhost:9000) and the Sonar-token
+
+- Set up Sonarqube webhook to connect with Jenkins URL: http://jenkins-public-ip:8080>/sonarqube-webhook/
+- Configure Jenkins plugin tools for Dependency Checks and Docker, and Terraform 
+
+- Update the backend.tf and main.tf file in the legacy branch to your region and your S3 bucket
+
+- Create Jenkins Pipeline with parameters for apply/destroy for EKS-Terraform to deploy all AWS resources for EKS cluster
+- See eks-terraform-jenkins in Scripts folder
+- Run the pipeline and validate EKS cluster creation
+
+- Add Sonarqube Project for chatbot that points to legacy branch
+- Create new chatbot pipeline with 'Discard old builds' selections checked off with Days to keep builds set to 1 and Max # of builds to keep 4.
+
+- What was failing? 
+    - Sonar Scanner, ran the following:
+        Updated Sonarqube Servers settings URL to localhost instead of Public IP.
+        
+    - Docker connection, ran the following on jenkins:
+        sudo usermod -aG docker jenkins
+        sudo systemctl restart jenkins
+        sudo systemctl restart docker
+        sudo -u jenkins docker info
+
+    - Was not able to access PublicIP:3000, had to add inbound rule. 
