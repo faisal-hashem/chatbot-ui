@@ -1,0 +1,29 @@
+pipeline{
+    agent any
+    stages {
+        stage ("Remove container") {
+            steps{
+                sh "docker stop chatbot | true"
+                sh "docker rm chatbot | true"
+             }
+        }
+        stage('Deploy to kubernets'){
+            steps{
+                script{
+                    withKubeConfig(caCertificate: '', clusterName: '', contextName: '', credentialsId: 'k8s', namespace: '', restrictKubeConfigAccess: false, serverUrl: '') {
+                       sh 'kubectl delete -f k8s/chatbot-ui.yaml'
+                  }
+                }
+            }
+        }
+        stage('scan cluster'){
+            steps{
+                script{
+                    withKubeConfig(caCertificate: '', clusterName: '', contextName: '', credentialsId: 'k8s', namespace: '', restrictKubeConfigAccess: false, serverUrl: '') {
+                       sh 'trivy k8s --report summary cluster'
+                  }
+                }
+            }
+        }
+    }
+}

@@ -43,7 +43,7 @@
 - What was failing? 
     - Sonar Scanner, ran the following:
         Updated Sonarqube Servers settings URL to localhost instead of Public IP.
-        
+
     - Docker connection, ran the following on jenkins:
         sudo usermod -aG docker jenkins
         sudo systemctl restart jenkins
@@ -51,3 +51,23 @@
         sudo -u jenkins docker info
 
     - Was not able to access PublicIP:3000, had to add inbound rule. 
+
+- Once Pipeline finishes running you can access docker container for chatbot on public IP address port 3000
+- Generate API token from your own OpenAI or get it free from online. And add it to the chatbot you created to be able to use it
+- This confirms you are able to run chatbot on a container in docker, now you can run this contianer on your EKS cluster under k8s
+- Go back to your Jenkins Pipeline and remove docker run stage. And add the stop/rm docker container step to remove the previously created container, or you can manually delete it from the jenkins box
+
+- Now we will need to update the kube config file on the Jenkins server so it can connect to the newly created EKS cluster.
+- aws eks update-kubeconfig --name <clustername> --region <region>
+- Open cat .kube/config and save that in a text file in your local machine
+- We will upload this secret file to Jenkins credentials so Jenkins pipeline can use this config to authenticate to the k8s cluster
+- Add the credentials to the credentials file on the Jenkins server 
+- Go to Scripts folder and add the new yaml file: k8s-yaml.txt. This basically removes the Docker run and the stop/remove and also no more trivy report at the end which was failing initially.
+- Once this new pipeline completes running you can access chatbot through the external IP, you can get it by running kubectl get all. 
+- Once we validate API key and chatbot is working, we can move forward to deleting the cluster
+
+
+- Run the deletion pipeline with the following in Scripts folder : pipeline-destroy.txt
+- Run terraform destroy on all EKS cluster resources
+- Delete Jenkins server. 
+
