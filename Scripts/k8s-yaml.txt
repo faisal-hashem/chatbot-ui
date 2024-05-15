@@ -10,7 +10,7 @@ pipeline{
     stages {
         stage('Checkout from Git'){
             steps{
-                git branch: 'legacy', url: 'https://github.com/fhashem-hashem/chatbot-ui.git'
+                git branch: 'legacy', url: 'https://github.com/faisal-hashem/chatbot-ui.git'
             }
         }
         stage('Install Dependencies') {
@@ -21,15 +21,8 @@ pipeline{
         stage("Sonarqube Analysis "){
             steps{
                 withSonarQubeEnv('sonar-server') {
-                    sh ''' $SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=Chatbot \
-                    -Dsonar.projectKey=Chatbot '''
-                }
-            }
-        }
-        stage("quality gate"){
-           steps {
-                script {
-                    waitForQualityGate abortPipeline: false, credentialsId: 'Sonar-token'
+                    sh ''' $SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=chatbot \
+                    -Dsonar.projectKey=chatbot '''
                 }
             }
         }
@@ -60,7 +53,7 @@ pipeline{
                 sh "trivy image fhashem423/chatbot:latest > trivy.json"
             }
         }
-        stage('Deploy to kubernets'){
+        stage('Deploy to kubernetes'){
             steps{
                 script{
                     withKubeConfig(caCertificate: '', clusterName: '', contextName: '', credentialsId: 'k8s', namespace: '', restrictKubeConfigAccess: false, serverUrl: '') {
@@ -70,3 +63,4 @@ pipeline{
             }
         }
     }
+}

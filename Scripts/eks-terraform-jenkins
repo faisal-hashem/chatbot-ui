@@ -3,7 +3,7 @@ pipeline{
     stages {
         stage('Checkout from Git'){
             steps{
-                git branch: 'legacy', url: 'https://github.com/Aj7Ay/chatbot-ui.git'
+                git branch: 'legacy', url: 'https://github.com/faisal-hashem/chatbot-ui.git'
             }
         }
         stage('Terraform version'){
